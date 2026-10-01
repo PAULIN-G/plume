@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.sqlite3
+.env
+staticfiles/
+media/
+!media/couvertures/.gitkeep
+!media/profils/.gitkeep
+venv/
+env/
+.venv/
+*.log
+.DS_Store
+.vscode/
+.idea/

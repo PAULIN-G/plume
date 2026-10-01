@@ -1,0 +1,17 @@
+{% extends "blog/base.html" %}
+
+{% block titre %}Supprimer l'article{% endblock %}
+
+{% block contenu %}
+<div class="conteneur-etroit">
+    <div class="carte-confirmation">
+        <h1>Supprimer cet article ?</h1>
+        <p>Es-tu sûr de vouloir supprimer « <strong>{{ article.titre }}</strong> » ? Cette action est <strong>irréversible</strong> et supprimera aussi tous ses commentaires.</p>
+        <form method="post" class="actions-confirmation">
+            {% csrf_token %}
+            <a href="{% url 'detail_article' article.slug %}" class="btn btn-ghost">Annuler</a>
+            <button type="submit" class="btn btn-danger">Oui, supprimer définitivement</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

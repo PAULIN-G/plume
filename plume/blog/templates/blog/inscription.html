@@ -1,0 +1,27 @@
+{% extends "blog/base.html" %}
+
+{% block titre %}Inscription{% endblock %}
+
+{% block contenu %}
+<div class="conteneur-etroit">
+    <div class="form-carte">
+        <h1>Créer un compte</h1>
+        <p class="sous-titre">Rejoins {{ nom_site }} pour publier tes propres articles.</p>
+
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="groupe-champ">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<p class="aide-champ">{{ field.help_text }}</p>{% endif %}
+                    {% for e in field.errors %}<p class="erreur">{{ e }}</p>{% endfor %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-accent btn-large">S'inscrire</button>
+        </form>
+
+        <p class="sous-titre">Déjà un compte ? <a href="{% url 'connexion' %}">Connecte-toi</a></p>
+    </div>
+</div>
+{% endblock %}

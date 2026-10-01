@@ -1,0 +1,63 @@
+{% extends "blog/base.html" %}
+
+{% block titre %}{{ action }}{% endblock %}
+
+{% block contenu %}
+<div class="conteneur-etroit">
+    <h1>{{ action }}</h1>
+
+    <form method="post" enctype="multipart/form-data" class="form-carte">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="message message-error">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="groupe-champ">
+            <label for="{{ form.titre.id_for_label }}">Titre</label>
+            {{ form.titre }}
+            {% for e in form.titre.errors %}<p class="erreur">{{ e }}</p>{% endfor %}
+        </div>
+
+        <div class="ligne-champs">
+            <div class="groupe-champ">
+                <label for="{{ form.categorie.id_for_label }}">Catégorie</label>
+                {{ form.categorie }}
+            </div>
+            <div class="groupe-champ">
+                <label for="{{ form.statut.id_for_label }}">Statut</label>
+                {{ form.statut }}
+            </div>
+        </div>
+
+        <div class="groupe-champ">
+            <label for="{{ form.tags_texte.id_for_label }}">Tags</label>
+            {{ form.tags_texte }}
+            <p class="aide-champ">{{ form.tags_texte.help_text }}</p>
+        </div>
+
+        <div class="groupe-champ">
+            <label for="{{ form.image_couverture.id_for_label }}">Image de couverture</label>
+            {% if article.image_couverture %}
+                <img src="{{ article.image_couverture.url }}" class="apercu-image" alt="">
+            {% endif %}
+            {{ form.image_couverture }}
+        </div>
+
+        <div class="groupe-champ">
+            <label for="{{ form.resume.id_for_label }}">Résumé (optionnel)</label>
+            {{ form.resume }}
+            <p class="aide-champ">{{ form.resume.help_text }}</p>
+        </div>
+
+        <div class="groupe-champ">
+            <label for="{{ form.contenu.id_for_label }}">Contenu</label>
+            {{ form.contenu }}
+            <p class="aide-champ">Mise en forme : ## Titre, ### Sous-titre, **gras**, *italique*, "- " pour une liste, et \`\`\`code\`\`\` pour un bloc de code.</p>
+            {% for e in form.contenu.errors %}<p class="erreur">{{ e }}</p>{% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-accent btn-large">Enregistrer</button>
+    </form>
+</div>
+{% endblock %}

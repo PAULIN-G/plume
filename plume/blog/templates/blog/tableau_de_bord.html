@@ -1,0 +1,65 @@
+{% extends "blog/base.html" %}
+
+{% block titre %}Tableau de bord{% endblock %}
+
+{% block contenu %}
+<h1>📊 Tableau de bord</h1>
+<p class="sous-titre">Un aperçu des performances de tes articles.</p>
+
+<div class="grille-stats">
+    <div class="carte-stat">
+        <div class="valeur">{{ total_vues }}</div>
+        <div class="label">Vues totales</div>
+    </div>
+    <div class="carte-stat">
+        <div class="valeur">{{ total_likes }}</div>
+        <div class="label">J'aime reçus</div>
+    </div>
+    <div class="carte-stat">
+        <div class="valeur">{{ total_commentaires }}</div>
+        <div class="label">Commentaires</div>
+    </div>
+    <div class="carte-stat">
+        <div class="valeur">{{ total_suiveurs }}</div>
+        <div class="label">Abonnés</div>
+    </div>
+</div>
+
+<h2>Tes articles</h2>
+<div class="table-scroll">
+<table class="table-articles">
+    <thead>
+        <tr>
+            <th>Titre</th>
+            <th>Statut</th>
+            <th>Vues</th>
+            <th>J'aime</th>
+            <th>Commentaires</th>
+            <th>Publié le</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for article in articles %}
+        <tr>
+            <td><a href="{% url 'detail_article' article.slug %}">{{ article.titre }}</a></td>
+            <td>
+                {% if article.est_brouillon %}
+                    <span class="puce-statut puce-brouillon">Brouillon</span>
+                {% else %}
+                    <span class="puce-statut puce-publie">Publié</span>
+                {% endif %}
+            </td>
+            <td>{{ article.vues }}</td>
+            <td>{{ article.nombre_likes }}</td>
+            <td>{{ article.commentaires.count }}</td>
+            <td>{{ article.date_publication|date:"d/m/Y" }}</td>
+            <td><a href="{% url 'modifier_article' article.slug %}" class="btn btn-ghost btn-petit">Modifier</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="etat-vide">Tu n'as pas encore publié d'article.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

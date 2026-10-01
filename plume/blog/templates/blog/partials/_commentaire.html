@@ -1,0 +1,60 @@
+{% load blog_extras %}
+<div class="commentaire {% if commentaire.est_reponse %}commentaire-reponse{% endif %}" id="commentaire-{{ commentaire.pk }}">
+    <div class="commentaire-avatar">
+        {% if commentaire.auteur.profil.photo %}
+            <img src="{{ commentaire.auteur.profil.photo.url }}" class="avatar-mini" alt="">
+        {% else %}
+            <span class="avatar-mini avatar-lettre">{{ commentaire.auteur.username|initiale }}</span>
+        {% endif %}
+    </div>
+    <div class="commentaire-corps">
+        <div class="commentaire-entete">
+            <strong>{{ commentaire.auteur.username }}</strong>
+            <span class="commentaire-date">{{ commentaire.date_creation|timesince }}</span>
+        </div>
+        <p>{{ commentaire.contenu }}</p>
+
+        <div class="reactions-commentaire">
+            {% reactions_groupees commentaire user as reactions %}
+            {% for r in reactions %}
+                {% if r.total > 0 %}
+                    <form action="{% url 'reagir_commentaire' commentaire.pk %}" method="post" class="inline-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="emoji" value="{{ r.emoji }}">
+                        <button type="submit" class="reaction-pill {% if r.active %}reaction-active{% endif %}" {% if not user.is_authenticated %}disabled{% endif %}>
+                            {{ r.symbole }} {{ r.total }}
+                        </button>
+                    </form>
+                {% endif %}
+            {% endfor %}
+
+            {% if user.is_authenticated %}
+                <div class="menu-plus-reactions">
+                    <button type="button" class="bouton-ajouter-reaction">+ réagir</button>
+                    <div class="palette-reactions">
+                        {% for r in reactions %}
+                            <form action="{% url 'reagir_commentaire' commentaire.pk %}" method="post" class="inline-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="emoji" value="{{ r.emoji }}">
+                                <button type="submit" title="{{ r.emoji }}">{{ r.symbole }}</button>
+                            </form>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <button class="lien-repondre" type="button" data-parent-id="{{ commentaire.pk }}" data-auteur="{{ commentaire.auteur.username }}">
+                    Répondre
+                </button>
+
+                <form action="{% url 'signaler_commentaire' commentaire.pk %}" method="post" class="inline-form">
+                    {% csrf_token %}
+                    <button type="submit" class="lien-signaler" title="Signaler ce commentaire">🚩</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% for reponse in commentaire.reponses.all %}
+    {% include "blog/partials/_commentaire.html" with commentaire=reponse %}
+{% endfor %}

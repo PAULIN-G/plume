@@ -1,0 +1,26 @@
+{% extends "blog/base.html" %}
+
+{% block titre %}Modifier mon profil{% endblock %}
+
+{% block contenu %}
+<div class="conteneur-etroit">
+    <div class="form-carte">
+        <h1>Modifier mon profil</h1>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if form.instance.photo %}
+                <img src="{{ form.instance.photo.url }}" class="apercu-image apercu-rond" alt="">
+            {% endif %}
+            {% for field in form %}
+                <div class="groupe-champ">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for e in field.errors %}<p class="erreur">{{ e }}</p>{% endfor %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-accent btn-large">Enregistrer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "blog/base.html" %}
+
+{% block titre %}Connexion{% endblock %}
+
+{% block contenu %}
+<div class="conteneur-etroit">
+    <div class="form-carte">
+        <h1>Connexion</h1>
+
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="groupe-champ">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for e in field.errors %}<p class="erreur">{{ e }}</p>{% endfor %}
+                </div>
+            {% endfor %}
+            {% if form.non_field_errors %}
+                <p class="erreur">{{ form.non_field_errors }}</p>
+            {% endif %}
+            <button type="submit" class="btn btn-accent btn-large">Se connecter</button>
+        </form>
+
+        <p class="sous-titre">Pas encore de compte ? <a href="{% url 'inscription' %}">Inscris-toi</a></p>
+    </div>
+</div>
+{% endblock %}

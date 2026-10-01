@@ -1,0 +1,64 @@
+{% extends "blog/base.html" %}
+
+{% block titre %}Accueil{% endblock %}
+
+{% block contenu %}
+<div class="mise-en-page-liste">
+    <div class="colonne-principale">
+        {% if q %}
+            <h1>Résultats pour « {{ q }} »</h1>
+        {% elif tag_actif %}
+            <h1>Articles tagués « {{ tag_actif.nom }} »</h1>
+        {% else %}
+            <div class="hero">
+                <span class="hero-eyebrow">Journal de la communauté</span>
+                <h1>Bienvenue sur {{ nom_site }}</h1>
+                <p>Des idées, des retours d'expérience et des histoires — écrites par la communauté.</p>
+            </div>
+        {% endif %}
+
+        <div class="grille-articles">
+            {% for article in page_obj %}
+                {% if forloop.first and page_obj.number == 1 and not q and not tag_actif %}
+                    {% include "blog/partials/_carte_article.html" with mise_en_avant=True %}
+                {% else %}
+                    {% include "blog/partials/_carte_article.html" %}
+                {% endif %}
+            {% empty %}
+                <p class="etat-vide">Aucun article pour le moment{% if q %} correspondant à ta recherche{% endif %}.</p>
+            {% endfor %}
+        </div>
+
+        {% include "blog/partials/_pagination.html" %}
+    </div>
+
+    <aside class="colonne-laterale">
+        {% if articles_populaires %}
+        <div class="widget">
+            <h3>🔥 Populaires</h3>
+            <ul class="liste-populaires">
+                {% for a in articles_populaires %}
+                    <li>
+                        <a href="{% url 'detail_article' a.slug %}">{{ a.titre }}</a>
+                        <span class="petit-texte">{{ a.vues }} vues</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if tags_populaires %}
+        <div class="widget">
+            <h3>🏷️ Tags populaires</h3>
+            <div class="nuage-tags">
+                {% for tag in tags_populaires %}
+                    <a href="?tag={{ tag.slug }}" class="tag-pill {% if tag_actif == tag %}tag-pill-actif{% endif %}">
+                        {{ tag.nom }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </aside>
+</div>
+{% endblock %}

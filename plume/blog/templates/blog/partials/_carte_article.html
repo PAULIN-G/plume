@@ -1,0 +1,36 @@
+{% load blog_extras %}
+<article class="carte-article{% if mise_en_avant %} carte-une{% endif %}">
+    <a href="{% url 'detail_article' article.slug %}" class="carte-lien-image">
+        {% if article.image_couverture %}
+            <img src="{{ article.image_couverture.url }}" alt="{{ article.titre }}" loading="lazy">
+        {% else %}
+            <div class="carte-image-defaut">{{ article.titre|slice:":1" }}</div>
+        {% endif %}
+        {% if article.est_brouillon %}<span class="etiquette-brouillon">Brouillon</span>{% endif %}
+    </a>
+    <div class="carte-corps">
+        {% if article.categorie %}
+            <a href="{% url 'categorie_detail' article.categorie.slug %}" class="badge-categorie" style="--badge-couleur: {{ article.categorie.couleur }}">
+                {{ article.categorie.nom }}
+            </a>
+        {% endif %}
+        <h2><a href="{% url 'detail_article' article.slug %}">{{ article.titre }}</a></h2>
+        <p class="carte-resume">{{ article.resume }}</p>
+        <div class="carte-meta">
+            <a href="{% url 'profil_public' article.auteur.username %}" class="meta-auteur">
+                {% if article.auteur.profil.photo %}
+                    <img src="{{ article.auteur.profil.photo.url }}" class="avatar-mini" alt="">
+                {% else %}
+                    <span class="avatar-mini avatar-lettre">{{ article.auteur.username|first|upper }}</span>
+                {% endif %}
+                {{ article.auteur.username }}
+            </a>
+            <span>·</span>
+            <span>{{ article.date_publication|date:"d M Y" }}</span>
+            <span>·</span>
+            <span>⏱️ {{ article.temps_lecture }} min</span>
+            <span>·</span>
+            <span>❤️ {{ article.nombre_likes }}</span>
+        </div>
+    </div>
+</article>

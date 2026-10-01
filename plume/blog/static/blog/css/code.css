@@ -1,0 +1,277 @@
+/* --- Barre de progression de lecture ------------------------------------- */
+
+#barre-progression {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), #ec4899);
+    z-index: 100;
+    transition: width 0.1s ease-out;
+}
+
+/* --- Blocs de code (coloration légère, sans dépendance externe) ---------- */
+
+.article-contenu pre {
+    background: #0d1117;
+    color: #e6edf3;
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    overflow-x: auto;
+    font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    margin: 0 0 1.3rem;
+}
+
+.article-contenu code {
+    font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+    background: var(--fond-survol);
+    padding: 0.15rem 0.4rem;
+    border-radius: 5px;
+    font-size: 0.85em;
+}
+
+.article-contenu pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
+}
+
+/* Coloration très légère par mots-clés (pas de lib externe) */
+.tok-mot-cle { color: #ff7b72; }
+.tok-chaine { color: #a5d6ff; }
+.tok-commentaire { color: #8b949e; font-style: italic; }
+.tok-nombre { color: #79c0ff; }
+.tok-fonction { color: #d2a8ff; }
+
+.bouton-copier-code {
+    position: relative;
+}
+
+.bloc-code {
+    position: relative;
+}
+
+.bouton-copier {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    background: rgba(255,255,255,0.08);
+    color: #e6edf3;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+.bouton-copier:hover { background: rgba(255,255,255,0.16); }
+
+/* --- Table des matières --------------------------------------------------- */
+
+.page-article-avec-toc {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 760px);
+    gap: 2.5rem;
+    max-width: 1000px;
+    margin: 0 auto;
+    align-items: start;
+}
+
+@media (max-width: 960px) {
+    .page-article-avec-toc { grid-template-columns: 1fr; }
+    .toc-flottante { display: none; }
+}
+
+.toc-flottante {
+    position: sticky;
+    top: 5.5rem;
+    font-size: 0.85rem;
+    background: var(--fond-carte);
+    border: 1px solid var(--bordure);
+    border-radius: 16px;
+    padding: 1rem 0.9rem 1.1rem;
+    box-shadow: var(--ombre);
+}
+
+.toc-flottante h4 {
+    margin: 0 0 0.6rem;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--texte-doux);
+}
+
+.toc-flottante ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-left: 2px solid var(--bordure);
+    display: flex;
+    flex-direction: column;
+}
+
+.toc-flottante a {
+    display: block;
+    padding: 0.35rem 0 0.35rem 0.9rem;
+    margin-left: -2px;
+    border-left: 2px solid transparent;
+    color: var(--texte-doux);
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.toc-flottante a.toc-actif {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    font-weight: 700;
+}
+
+.toc-flottante a.toc-sous-niveau {
+    padding-left: 1.6rem;
+    font-size: 0.82rem;
+}
+
+/* --- Suivi d'auteur --------------------------------------------------------- */
+
+.btn-suivre {
+    padding: 0.5rem 1.15rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: var(--accent-texte);
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+.btn-suivre:hover { transform: translateY(-1px); }
+
+.btn-suivre.suit-deja {
+    background: transparent;
+    color: var(--accent);
+}
+
+.stats-profil {
+    display: flex;
+    gap: 1.4rem;
+    margin: 0.6rem 0;
+    font-size: 0.88rem;
+}
+.stats-profil strong { display: block; font-size: 1.05rem; }
+.stats-profil span { color: var(--texte-doux); font-size: 0.75rem; }
+
+/* --- Réactions sur commentaires --------------------------------------------- */
+
+.reactions-commentaire {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.reaction-pill {
+    background: var(--fond);
+    border: 1px solid var(--bordure);
+    border-radius: 999px;
+    padding: 0.15rem 0.55rem;
+    font-size: 0.78rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.reaction-pill:hover { background: var(--fond-survol); }
+.reaction-pill.reaction-active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+
+.menu-plus-reactions { position: relative; display: inline-block; }
+.bouton-ajouter-reaction {
+    background: none;
+    border: 1px dashed var(--bordure);
+    border-radius: 999px;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.78rem;
+    cursor: pointer;
+    color: var(--texte-doux);
+}
+.palette-reactions {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 0.4rem);
+    left: 0;
+    background: var(--fond-carte);
+    border: 1px solid var(--bordure);
+    border-radius: 999px;
+    padding: 0.35rem 0.5rem;
+    gap: 0.3rem;
+    box-shadow: var(--ombre-hover);
+    z-index: 10;
+}
+.menu-plus-reactions:hover .palette-reactions,
+.menu-plus-reactions:focus-within .palette-reactions { display: flex; }
+.palette-reactions button {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0.1rem 0.2rem;
+    border-radius: 6px;
+}
+.palette-reactions button:hover { background: var(--fond-survol); }
+
+.lien-signaler {
+    background: none;
+    border: none;
+    color: var(--texte-doux);
+    font-size: 0.78rem;
+    cursor: pointer;
+    padding: 0;
+}
+.lien-signaler:hover { color: var(--danger); }
+
+/* --- Badge RSS dans la sous-nav --------------------------------------------- */
+
+.badge-rss { margin-left: auto; }
+
+/* --- Tableau de bord --------------------------------------------------------- */
+
+.grille-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.carte-stat {
+    background: var(--fond-carte);
+    border: 1px solid var(--bordure);
+    border-radius: 14px;
+    padding: 1.2rem;
+    text-align: center;
+}
+.carte-stat .valeur { font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+.carte-stat .label { color: var(--texte-doux); font-size: 0.82rem; margin-top: 0.2rem; }
+
+.table-articles {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--fond-carte);
+    border: 1px solid var(--bordure);
+    border-radius: 14px;
+    overflow: hidden;
+}
+.table-articles th, .table-articles td {
+    padding: 0.8rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--bordure);
+    font-size: 0.88rem;
+}
+.table-articles th { color: var(--texte-doux); font-weight: 700; font-size: 0.78rem; text-transform: uppercase; }
+.table-articles tr:last-child td { border-bottom: none; }
+.table-articles a:hover { color: var(--accent); }
+.table-scroll { overflow-x: auto; border-radius: 14px; }
+.puce-statut { padding: 0.15rem 0.55rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
+.puce-publie { background: #dcfce7; color: #166534; }
+.puce-brouillon { background: #fef3c7; color: #92400e; }

@@ -1,0 +1,11 @@
+{% extends "blog/base.html" %}
+{% block titre %}Page introuvable{% endblock %}
+{% block contenu %}
+<div class="conteneur-etroit">
+    <div class="carte-confirmation">
+        <h1>404 — Page introuvable 🧭</h1>
+        <p>Cette page n'existe pas ou a été déplacée.</p>
+        <a href="{% url 'liste_articles' %}" class="btn btn-accent">Retour à l'accueil</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "blog/base.html" %}
+
+{% block titre %}Mot de passe modifié{% endblock %}
+
+{% block contenu %}
+<div class="conteneur-etroit">
+    <div class="carte-confirmation">
+        <h1>✅ Mot de passe modifié</h1>
+        <p>Ton mot de passe a été mis à jour avec succès.</p>
+        <a href="{% url 'liste_articles' %}" class="btn btn-accent">Retour à l'accueil</a>
+    </div>
+</div>
+{% endblock %}

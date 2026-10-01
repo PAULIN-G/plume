@@ -1,0 +1,135 @@
+{% extends "blog/base.html" %}
+{% load blog_extras %}
+
+{% block titre %}{{ article.titre }}{% endblock %}
+{% block meta_description %}{{ article.resume }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_titre %}{{ article.titre }}{% endblock %}
+{% block og_description %}{{ article.resume }}{% endblock %}
+{% block og_image %}{% if article.image_couverture %}<meta property="og:image" content="{{ article.image_couverture.url }}">{% endif %}{% endblock %}
+
+{% block contenu %}
+{% table_des_matieres article.contenu as titres_toc %}
+
+<div class="{% if titres_toc %}page-article-avec-toc{% endif %}">
+
+    {% if titres_toc %}
+    <aside class="toc-flottante">
+        <h4>Sommaire</h4>
+        <ul id="liste-toc">
+            {% for t in titres_toc %}
+                <li><a href="#{{ t.ancre }}" class="{% if t.niveau == 3 %}toc-sous-niveau{% endif %}">{{ t.texte }}</a></li>
+            {% endfor %}
+        </ul>
+    </aside>
+    {% endif %}
+
+    <article class="page-article">
+
+        {% if article.est_brouillon %}
+            <div class="bandeau-brouillon">📝 Ceci est un brouillon — seul toi peux le voir.</div>
+        {% endif %}
+
+        <div class="article-entete">
+            {% if article.categorie %}
+                <a href="{% url 'categorie_detail' article.categorie.slug %}" class="badge-categorie" style="--badge-couleur: {{ article.categorie.couleur }}">
+                    {{ article.categorie.nom }}
+                </a>
+            {% endif %}
+            <h1>{{ article.titre }}</h1>
+
+            <div class="article-meta">
+                <a href="{% url 'profil_public' article.auteur.username %}" class="meta-auteur">
+                    {% if article.auteur.profil.photo %}
+                        <img src="{{ article.auteur.profil.photo.url }}" class="avatar-mini" alt="">
+                    {% else %}
+                        <span class="avatar-mini avatar-lettre">{{ article.auteur.username|initiale }}</span>
+                    {% endif %}
+                    <span>
+                        <strong>{{ article.auteur.username }}</strong><br>
+                        <span class="petit-texte">{{ article.date_publication|date:"d F Y" }} · ⏱️ {{ article.temps_lecture }} min · 👁️ {{ article.vues }} vues</span>
+                    </span>
+                </a>
+
+                {% if user == article.auteur %}
+                    <div class="actions-auteur">
+                        <a href="{% url 'modifier_article' article.slug %}" class="btn btn-ghost btn-petit">Modifier</a>
+                        <a href="{% url 'supprimer_article' article.slug %}" class="btn btn-danger btn-petit">Supprimer</a>
+                    </div>
+                {% elif user.is_authenticated %}
+                    <form action="{% url 'toggle_follow' article.auteur.username %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button type="submit" class="btn-suivre {% if suit_auteur %}suit-deja{% endif %}">
+                            {% if suit_auteur %}✓ Suivi{% else %}+ Suivre{% endif %}
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if article.image_couverture %}
+            <img src="{{ article.image_couverture.url }}" alt="{{ article.titre }}" class="article-couverture">
+        {% endif %}
+
+        <div class="article-contenu" id="contenu-article">
+            {{ article.contenu|mise_en_forme }}
+        </div>
+
+        {% if article.tags.all %}
+            <div class="nuage-tags article-tags">
+                {% for tag in article.tags.all %}
+                    <a href="{% url 'liste_articles' %}?tag={{ tag.slug }}" class="tag-pill">{{ tag.nom }}</a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="barre-like">
+            <form action="{% url 'toggle_like' article.slug %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn-like {% if a_aime %}btn-like-actif{% endif %}" {% if not user.is_authenticated %}disabled title="Connecte-toi pour aimer"{% endif %}>
+                    {% if a_aime %}❤️{% else %}🤍{% endif %} {{ article.nombre_likes }} J'aime
+                </button>
+            </form>
+        </div>
+    </article>
+</div>
+
+{% if articles_similaires %}
+<section class="section-similaires">
+    <h2>Articles similaires</h2>
+    <div class="grille-articles">
+        {% for a in articles_similaires %}
+            {% include "blog/partials/_carte_article.html" with article=a %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="section-commentaires">
+    <h2>💬 Commentaires ({{ article.commentaires.count }})</h2>
+
+    {% if user.is_authenticated %}
+        <form method="post" class="form-commentaire" id="form-commentaire">
+            {% csrf_token %}
+            <input type="hidden" name="parent_id" id="parent_id" value="">
+            <div id="reponse-a" class="reponse-a" hidden>
+                Réponse à <strong id="reponse-a-nom"></strong>
+                <button type="button" id="annuler-reponse">✕</button>
+            </div>
+            {{ form.contenu }}
+            <button type="submit" class="btn btn-accent">Publier</button>
+        </form>
+    {% else %}
+        <p class="etat-vide"><a href="{% url 'connexion' %}">Connecte-toi</a> pour rejoindre la conversation.</p>
+    {% endif %}
+
+    <div class="liste-commentaires">
+        {% for commentaire in commentaires %}
+            {% include "blog/partials/_commentaire.html" %}
+        {% empty %}
+            <p class="etat-vide">Aucun commentaire pour l'instant. Sois le premier à réagir !</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

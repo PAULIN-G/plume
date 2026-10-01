@@ -1,0 +1,126 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr" data-theme="clair">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block titre %}{{ nom_site }}{% endblock %} · {{ nom_site }}</title>
+<meta name="description" content="{% block meta_description %}Un blog simple, moderne et rapide.{% endblock %}">
+
+<!-- Open Graph : belles previews quand un lien est partagé -->
+<meta property="og:site_name" content="{{ nom_site }}">
+<meta property="og:type" content="{% block og_type %}website{% endblock %}">
+<meta property="og:title" content="{% block og_titre %}{{ nom_site }}{% endblock %}">
+<meta property="og:description" content="{% block og_description %}Un blog simple, moderne et rapide.{% endblock %}">
+{% block og_image %}{% endblock %}
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="alternate" type="application/rss+xml" title="{{ nom_site }} — flux RSS" href="{% url 'rss_feed' %}">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:ital@0;1&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'blog/css/style.css' %}">
+<link rel="stylesheet" href="{% static 'blog/css/code.css' %}">
+<script>
+  /* Applique le thème sauvegardé AVANT le rendu, pour éviter un flash blanc/noir */
+  (function() {
+    var theme = localStorage.getItem("plume-theme");
+    if (!theme) {
+      theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "sombre" : "clair";
+    }
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+</head>
+<body>
+
+<a class="lien-sauter" href="#contenu-principal">Aller au contenu</a>
+<div id="barre-progression"></div>
+
+<header class="navbar">
+    <div class="navbar-inner">
+        <a href="{% url 'liste_articles' %}" class="logo">
+            <span class="logo-marque" aria-hidden="true">✎</span> {{ nom_site }}
+        </a>
+
+        <form class="recherche" method="get" action="{% url 'liste_articles' %}">
+            <input type="search" name="q" placeholder="Rechercher un article…" value="{{ q|default:'' }}" aria-label="Rechercher">
+            <button type="submit" aria-label="Rechercher">⌕</button>
+        </form>
+
+        <nav class="nav-liens">
+            <button id="toggle-theme" class="btn-icone" type="button" title="Changer de thème" aria-label="Changer de thème">
+                <span class="icone-lune">☾</span>
+                <span class="icone-soleil">☀</span>
+            </button>
+
+            {% if user.is_authenticated %}
+                <a href="{% url 'tableau_de_bord' %}" class="btn-icone" title="Tableau de bord" aria-label="Tableau de bord">▦</a>
+                <a href="{% url 'creer_article' %}" class="btn btn-accent">+ <span class="btn-texte">Nouvel article</span></a>
+                <div class="menu-utilisateur">
+                    <button class="avatar-btn" type="button" aria-expanded="false" aria-haspopup="true" aria-label="Menu du compte">
+                        {% if user.profil.photo %}
+                            <img src="{{ user.profil.photo.url }}" alt="" class="avatar-mini">
+                        {% else %}
+                            <span class="avatar-mini avatar-lettre">{{ user.username|first|upper }}</span>
+                        {% endif %}
+                    </button>
+                    <div class="menu-deroulant">
+                        <a href="{% url 'profil_public' user.username %}">Mon profil</a>
+                        <a href="{% url 'tableau_de_bord' %}">Tableau de bord</a>
+                        <a href="{% url 'modifier_profil' %}">Modifier le profil</a>
+                        <a href="{% url 'password_change' %}">Changer le mot de passe</a>
+                        <form action="{% url 'deconnexion' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="lien-bouton">Déconnexion</button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <a href="{% url 'connexion' %}" class="btn btn-ghost">Connexion</a>
+                <a href="{% url 'inscription' %}" class="btn btn-accent">Inscription</a>
+            {% endif %}
+        </nav>
+    </div>
+
+    {% if toutes_categories %}
+    <div class="sous-nav">
+        <div class="sous-nav-inner">
+            {% for cat in toutes_categories %}
+                <a href="{% url 'categorie_detail' cat.slug %}" class="badge-categorie {% if request.resolver_match.url_name == 'categorie_detail' and request.resolver_match.kwargs.slug == cat.slug %}actif{% endif %}" style="--badge-couleur: {{ cat.couleur }}">
+                    {{ cat.nom }}
+                </a>
+            {% endfor %}
+            <a href="{% url 'rss_feed' %}" class="badge-categorie badge-rss" title="Flux RSS">📡 RSS</a>
+        </div>
+    </div>
+    {% endif %}
+</header>
+
+<main class="conteneur" id="contenu-principal">
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message message-{{ message.tags }}">
+                    <span>{{ message }}</span>
+                    <button type="button" class="fermer-message" aria-label="Fermer">✕</button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% block contenu %}{% endblock %}
+</main>
+
+<footer class="pied-de-page">
+    <div class="pied-inner">
+        <p>{{ nom_site }} — un petit blog fait avec Django.</p>
+        <p class="pied-secondaire">Construit pour apprendre, pensé pour durer. · <a href="{% url 'rss_feed' %}">Flux RSS</a></p>
+    </div>
+</footer>
+
+<script src="{% static 'blog/js/main.js' %}"></script>
+</body>
+</html>
+

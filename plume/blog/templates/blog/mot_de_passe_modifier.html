@@ -1,0 +1,22 @@
+{% extends "blog/base.html" %}
+
+{% block titre %}Changer le mot de passe{% endblock %}
+
+{% block contenu %}
+<div class="conteneur-etroit">
+    <div class="form-carte">
+        <h1>Changer le mot de passe</h1>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="groupe-champ">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for e in field.errors %}<p class="erreur">{{ e }}</p>{% endfor %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-accent btn-large">Valider</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

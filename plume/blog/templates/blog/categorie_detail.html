@@ -1,0 +1,20 @@
+{% extends "blog/base.html" %}
+
+{% block titre %}{{ categorie.nom }}{% endblock %}
+
+{% block contenu %}
+<div class="hero" style="--badge-couleur: {{ categorie.couleur }}">
+    <h1><span class="badge-categorie" style="--badge-couleur: {{ categorie.couleur }}">{{ categorie.nom }}</span></h1>
+    {% if categorie.description %}<p>{{ categorie.description }}</p>{% endif %}
+</div>
+
+<div class="grille-articles">
+    {% for article in page_obj %}
+        {% include "blog/partials/_carte_article.html" %}
+    {% empty %}
+        <p class="etat-vide">Aucun article dans cette catégorie pour l'instant.</p>
+    {% endfor %}
+</div>
+
+{% include "blog/partials/_pagination.html" %}
+{% endblock %}

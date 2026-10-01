@@ -1,0 +1,58 @@
+{% extends "blog/base.html" %}
+
+{% block titre %}{{ auteur.username }}{% endblock %}
+
+{% block contenu %}
+<div class="entete-profil">
+    {% if profil.photo %}
+        <img src="{{ profil.photo.url }}" class="avatar-grand" alt="{{ auteur.username }}">
+    {% else %}
+        <span class="avatar-grand avatar-lettre">{{ auteur.username|first|upper }}</span>
+    {% endif %}
+    <div>
+        <h1>
+            {% if auteur.first_name or auteur.last_name %}
+                {{ auteur.first_name }} {{ auteur.last_name }}
+            {% else %}
+                {{ auteur.username }}
+            {% endif %}
+        </h1>
+        <p class="petit-texte">@{{ auteur.username }}</p>
+
+        <div class="stats-profil">
+            <div><strong>{{ profil.nombre_suiveurs }}</strong><span>Abonnés</span></div>
+            <div><strong>{{ profil.nombre_suivis }}</strong><span>Suivis</span></div>
+            <div><strong>{{ profil.articles_publies.count }}</strong><span>Articles</span></div>
+        </div>
+
+        {% if profil.bio %}<p class="profil-bio">{{ profil.bio }}</p>{% endif %}
+        {% if profil.site_web %}<a href="{{ profil.site_web }}" target="_blank" rel="noopener" class="lien-site">🔗 {{ profil.site_web }}</a>{% endif %}
+
+        <div style="margin-top: 0.8rem;">
+            {% if user == auteur %}
+                <a href="{% url 'modifier_profil' %}" class="btn btn-ghost btn-petit">Modifier mon profil</a>
+                <a href="{% url 'tableau_de_bord' %}" class="btn btn-ghost btn-petit">Tableau de bord</a>
+            {% elif user.is_authenticated %}
+                <form action="{% url 'toggle_follow' auteur.username %}" method="post" class="inline-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn-suivre {% if suit_deja %}suit-deja{% endif %}">
+                        {% if suit_deja %}✓ Suivi{% else %}+ Suivre{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<h2>Articles publiés</h2>
+<div class="grille-articles">
+    {% for article in page_obj %}
+        {% include "blog/partials/_carte_article.html" %}
+    {% empty %}
+        <p class="etat-vide">Aucun article publié pour l'instant.</p>
+    {% endfor %}
+</div>
+
+{% include "blog/partials/_pagination.html" %}
+{% endblock %}
