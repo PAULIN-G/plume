@@ -49,37 +49,67 @@ DEBUG = env_bool("DEBUG", default=False)
 # HÔTES AUTORISÉS
 # ---------------------------------------------------------------------------
 
-allowed_hosts_env = os.environ.get(
-    "ALLOWED_HOSTS",
-    "localhost,127.0.0.1",
-)
+def _hosts_from_env(name, default=""):
+    return [
+        host.strip()
+        for host in os.environ.get(name, default).split(",")
+        if host.strip()
+    ]
 
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in allowed_hosts_env.split(",")
-    if host.strip()
-]
 
-# Autorise ton domaine Vercel
-if "plume-nine-pi.vercel.app" not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append("plume-nine-pi.vercel.app")
+def _ajouter_hote(liste, hote):
+    if hote and hote not in liste:
+        liste.append(hote)
+
+
+ALLOWED_HOSTS = _hosts_from_env("ALLOWED_HOSTS", "localhost,127.0.0.1")
+
+# Prévisualisations et production Vercel : *.vercel.app
+# (chaque déploiement a un sous-domaine différent, d'où le joker)
+_ajouter_hote(ALLOWED_HOSTS, ".vercel.app")
+
+# Variables injectées automatiquement par Vercel (sans https://)
+for var in ("VERCEL_URL", "VERCEL_PROJECT_PRODUCTION_URL", "VERCEL_BRANCH_URL"):
+    valeur = os.environ.get(var, "").strip()
+    if valeur.startswith("http://") or valeur.startswith("https://"):
+        valeur = valeur.split("://", 1)[1]
+    _ajouter_hote(ALLOWED_HOSTS, valeur.rstrip("/"))
+
+# Compatibilité Render
+_ajouter_hote(ALLOWED_HOSTS, os.environ.get("RENDER_EXTERNAL_HOSTNAME", "").strip())
+
+# Derrière le proxy Vercel, l'hôte réel arrive dans X-Forwarded-Host
+if os.environ.get("VERCEL"):
+    USE_X_FORWARDED_HOST = True
+    USE_X_FORWARDED_PORT = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
 # ---------------------------------------------------------------------------
 # CSRF
 # ---------------------------------------------------------------------------
 
-CSRF_TRUSTED_ORIGINS = [
-    origin.strip()
-    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
-    if origin.strip()
-]
+CSRF_TRUSTED_ORIGINS = _hosts_from_env("CSRF_TRUSTED_ORIGINS")
 
-# Autorise ton domaine Vercel
-if "https://plume-nine-pi.vercel.app" not in CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS.append(
-        "https://plume-nine-pi.vercel.app"
-    )
+
+def _ajouter_origine(origine):
+    if origine and origine not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origine)
+
+
+_ajouter_origine("https://*.vercel.app")
+
+for var in ("VERCEL_URL", "VERCEL_PROJECT_PRODUCTION_URL", "VERCEL_BRANCH_URL"):
+    valeur = os.environ.get(var, "").strip()
+    if not valeur:
+        continue
+    if valeur.startswith("http://") or valeur.startswith("https://"):
+        _ajouter_origine(valeur.rstrip("/"))
+    else:
+        _ajouter_origine(f"https://{valeur.rstrip('/')}")
+
+if os.environ.get("RENDER_EXTERNAL_HOSTNAME"):
+    _ajouter_origine(f"https://{os.environ['RENDER_EXTERNAL_HOSTNAME']}")
 
 
 # ---------------------------------------------------------------------------
