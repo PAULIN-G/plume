@@ -1,4 +1,3 @@
-```python
 """
 Configuration Django pour le projet Plume.
 
