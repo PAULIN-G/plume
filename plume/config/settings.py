@@ -1,9 +1,10 @@
+```python
 """
 Configuration Django pour le projet Plume.
 
-Ce fichier lit ses valeurs sensibles depuis des variables d'environnement
-(via un fichier .env en local, ou les variables d'environnement fournies
-par la plateforme d'hébergement en production).
+Les valeurs sensibles sont lues depuis les variables d'environnement :
+- fichier .env en local
+- variables d'environnement en production
 """
 
 import os
@@ -11,46 +12,79 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+
+# ---------------------------------------------------------------------------
+# CONFIGURATION DE BASE
+# ---------------------------------------------------------------------------
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Charge le fichier .env s'il existe (utile en local ; en production,
-# les variables sont normalement déjà injectées par l'hébergeur)
+# Charge le fichier .env s'il existe
 load_dotenv(BASE_DIR / ".env")
 
 
 def env_bool(name, default=False):
     value = os.environ.get(name)
+
     if value is None:
         return default
+
     return value.strip().lower() in ("1", "true", "yes", "on")
 
 
-# --- Sécurité -----------------------------------------------------------
+# ---------------------------------------------------------------------------
+# SÉCURITÉ
+# ---------------------------------------------------------------------------
 
 SECRET_KEY = os.environ.get(
     "SECRET_KEY",
     "django-insecure-CHANGE-MOI-avant-le-deploiement-en-production",
 )
 
-DEBUG = env_bool("DEBUG", default=True)
+# En production, DEBUG doit être False
+DEBUG = env_bool("DEBUG", default=False)
+
+
+# ---------------------------------------------------------------------------
+# HÔTES AUTORISÉS
+# ---------------------------------------------------------------------------
+
+allowed_hosts_env = os.environ.get(
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1",
+)
 
 ALLOWED_HOSTS = [
-    h.strip() for h in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()
+    host.strip()
+    for host in allowed_hosts_env.split(",")
+    if host.strip()
 ]
 
-# Render (et d'autres hébergeurs) exposent l'URL externe dans cette variable.
-RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+# Autorise ton domaine Vercel
+if "plume-nine-pi.vercel.app" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("plume-nine-pi.vercel.app")
+
+
+# ---------------------------------------------------------------------------
+# CSRF
+# ---------------------------------------------------------------------------
 
 CSRF_TRUSTED_ORIGINS = [
-    o.strip() for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()
+    origin.strip()
+    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
 ]
-if RENDER_EXTERNAL_HOSTNAME:
-    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
+
+# Autorise ton domaine Vercel
+if "https://plume-nine-pi.vercel.app" not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(
+        "https://plume-nine-pi.vercel.app"
+    )
 
 
-# --- Applications ---------------------------------------------------------
+# ---------------------------------------------------------------------------
+# APPLICATIONS
+# ---------------------------------------------------------------------------
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -67,6 +101,11 @@ INSTALLED_APPS = [
 
 SITE_ID = 1
 
+
+# ---------------------------------------------------------------------------
+# MIDDLEWARE
+# ---------------------------------------------------------------------------
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -78,12 +117,19 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+
+# ---------------------------------------------------------------------------
+# URL / TEMPLATES
+# ---------------------------------------------------------------------------
+
 ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [
+            BASE_DIR / "templates",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -100,19 +146,25 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 
-# --- Base de données --------------------------------------------------
+# ---------------------------------------------------------------------------
+# BASE DE DONNÉES
+# ---------------------------------------------------------------------------
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if DATABASE_URL:
-    # Production : on parse l'URL fournie par l'hébergeur (PostgreSQL, etc.)
+    # Production : PostgreSQL ou autre base fournie par l'hébergeur
     import dj_database_url
 
     DATABASES = {
-        "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+        )
     }
+
 else:
-    # Développement local : SQLite, aucune configuration nécessaire
+    # Développement local : SQLite
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -121,28 +173,59 @@ else:
     }
 
 
-# --- Validation des mots de passe --------------------------------------
+# ---------------------------------------------------------------------------
+# VALIDATION DES MOTS DE PASSE
+# ---------------------------------------------------------------------------
 
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "UserAttributeSimilarityValidator"
+        )
+    },
+    {
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "MinimumLengthValidator"
+        )
+    },
+    {
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "CommonPasswordValidator"
+        )
+    },
+    {
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "NumericPasswordValidator"
+        )
+    },
 ]
 
 
-# --- Internationalisation -----------------------------------------------
+# ---------------------------------------------------------------------------
+# INTERNATIONALISATION
+# ---------------------------------------------------------------------------
 
 LANGUAGE_CODE = "fr-fr"
+
 TIME_ZONE = "UTC"
+
 USE_I18N = True
+
 USE_TZ = True
 
 
-# --- Fichiers statiques et médias ---------------------------------------
+# ---------------------------------------------------------------------------
+# FICHIERS STATIQUES
+# ---------------------------------------------------------------------------
 
 STATIC_URL = "/static/"
+
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
 STATICFILES_DIRS = []
 
 STORAGES = {
@@ -150,33 +233,67 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": (
+            "whitenoise.storage."
+            "CompressedManifestStaticFilesStorage"
+        ),
     },
 }
 
+
+# ---------------------------------------------------------------------------
+# FICHIERS MÉDIA
+# ---------------------------------------------------------------------------
+
 MEDIA_URL = "/media/"
+
 MEDIA_ROOT = BASE_DIR / "media"
+
+
+# ---------------------------------------------------------------------------
+# CONFIGURATION GÉNÉRALE
+# ---------------------------------------------------------------------------
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-# --- Authentification ----------------------------------------------------
+# ---------------------------------------------------------------------------
+# AUTHENTIFICATION
+# ---------------------------------------------------------------------------
 
 LOGIN_URL = "connexion"
+
 LOGIN_REDIRECT_URL = "liste_articles"
+
 LOGOUT_REDIRECT_URL = "liste_articles"
 
 
-# --- Emails (console en local) -------------------------------------------
+# ---------------------------------------------------------------------------
+# EMAILS
+# ---------------------------------------------------------------------------
 
 EMAIL_BACKEND = os.environ.get(
-    "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.console.EmailBackend",
 )
 
-# --- Sécurité en production ---------------------------------------------
+
+# ---------------------------------------------------------------------------
+# SÉCURITÉ EN PRODUCTION
+# ---------------------------------------------------------------------------
 
 if not DEBUG:
-    SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", default=True)
+
+    SECURE_SSL_REDIRECT = env_bool(
+        "SECURE_SSL_REDIRECT",
+        default=True,
+    )
+
     SESSION_COOKIE_SECURE = True
+
     CSRF_COOKIE_SECURE = True
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+    SECURE_PROXY_SSL_HEADER = (
+        "HTTP_X_FORWARDED_PROTO",
+        "https",
+    )
